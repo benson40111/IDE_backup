@@ -4,3 +4,4 @@ cp .tmux.conf ~/.tmux.conf
 cp config.fish ~/.config/fish/config.fish
 cp prompt.sh ~/
 cp .zshrc ~/
+cp .vimrc ~/
