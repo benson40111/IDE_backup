@@ -1,135 +1,140 @@
-set nocompatible              " 去除VI一致性,必須
-filetype off                  " 必須
+"restore
+autocmd BufReadPost *
+			\ if line("'\"") > 1 && line("'\"") <= line("$") |
+			\   execute "normal! g`\"" |
+			\ endif
 
-" 設置包括vundle和初始化相關的runtime path
-set rtp+=~/.vim/bundle/Vundle.vim
-call vundle#begin()
-" 另一種選擇, 指定一個vundle安裝插件的路徑
-"call vundle#begin('~/some/path/here')
+autocmd BufReadPre *
+			\   if getfsize(expand("%")) > 10000000 |
+			\   syntax off |
+			\   endif
 
-" 讓vundle管理插件版本,必須
-Plugin 'VundleVim/Vundle.vim'
+au BufEnter * call MyLastWindow()
+function! MyLastWindow()
+	" if the window is quickfix/locationlist go on
+	if &buftype=='quickfix' || &buftype == 'locationlist'
+		" if this window is last on screen quit without warning
+		if winbufnr(2) == -1
+			quit!
+		endif
+	endif
+endfunction
+"for plug
+set nocompatible 
+filetype off   
+call plug#begin('~/.vim/plugged')
+Plug 'vim-airline/vim-airline'
+Plug 'Valloric/YouCompleteMe'
+Plug 'pangloss/vim-javascript', {'for':'js'}
+"Plug 'ervandew/supertab'
+Plug 'SirVer/ultisnips', {'for':'py'}
+Plug 'honza/vim-snippets', {'for':'html'}
+Plug 'Raimondi/delimitMate'
+"Plug 'jiangmiao/auto-pairs'
+Plug 'Glench/Vim-Jinja2-Syntax'
+Plug 'vim-airline/vim-airline-themes'
+Plug 'w0rp/ale'
+Plug 'ternjs/tern_for_vim'
+Plug 'posva/vim-vue', {'for': 'vue'}
+Plug 'scrooloose/nerdtree', {'on': 'NERDTreeToggle'}
+call plug#end()
 
-" 以下範例用來支持不同格式的插件安裝.
-" 請將安裝插件的命令放在vundle#begin和vundle#end之間.
-" Github上的插件
-" 格式為 Plugin '用戶名/插件倉庫名'
-Plugin 'tpope/vim-fugitive'
-" 來自 http://vim-scripts.org/vim/scripts.html 的插件
-" Plugin '插件名稱' 實際上是 Plugin 'vim-scripts/插件倉庫名' 只是此處的用戶名可以省略
-Plugin 'L9'
-" 由Git支持但不再github上的插件倉庫 Plugin 'git clone 後面的地址'
-Plugin 'git://git.wincent.com/command-t.git'
-" 正確指定路徑用以設置runtimepath. 以下範例插件在sparkup/vim目錄下
-Plugin 'rstacruz/sparkup', {'rtp': 'vim/'}
-Plugin 'bling/vim-airline'
-Plugin 'edkolev/promptline.vim'
-Plugin 'molokai'
-Plugin 'davidhalter/jedi-vim'
-Plugin 'scrooloose/nerdtree'
-Plugin 'nathanaelkane/vim-indent-guides'
-Plugin 'Valloric/YouCompleteMe'
-Plugin 'edkolev/tmuxline.vim'
-" 你的所有插件需要在下面這行之前
-call vundle#end()            " 必須
-filetype plugin indent on    " 必須 加載vim自帶和插件相應的語法和文件類型相關腳本
-" 忽視插件改變縮進,可以使用以下替代:
-"filetype plugin on
-"
-" 簡要幫助文檔
-" :PluginList       - 列出所有已配置的插件
-" :PluginInstall    - 安裝插件,追加 `!` 用以更新或使用 :PluginUpdate
-" :PluginSearch foo - 搜索 foo ; 追加 `!` 清除本地緩存
-" :PluginClean      - 清除未使用插件,需要確認; 追加 `!` 自動批准移除未使用插件
-"
-" 查閱 :h vundle 獲取更多細節和wiki以及FAQ
-" 將你自己對非插件片段放在這行之後
-"
 "UI_Setting
 set tabstop=4
 set shiftwidth=4
 set history=1000
 set backspace=2
 set laststatus=2
-set mouse=a
 set number
+set display=lastline           " Show as much as possible of the last line
+set mouse=a
 "Vim_Encoding_Setting
 set encoding=utf-8  
 set termencoding=utf-8
+
 "Vim_Env_Setting
+set autowrite      " Automatically write a file when leaving a modified buffer
+set ignorecase     " Case sensitive search
+set smartcase      " Case sensitive when uc present
+"let s:save_cpo = &cpo
+set cpo&vim
+set undofile             " Persistent undo
+set undolevels=1000      " Maximum number of changes that can be undone
+set undoreload=10000     " Maximum number lines to save for undo on a buffer reload
+set ttyfast                    " Faster redrawing
+set wildmenu                   " Show list instead of just completing
+set autoindent                 " Indent at the same level of the previous line
+set autoread                   " Automatically read a file changed outside of vim
+set history=10000              " Maximum history record
 set showmatch
 set cursorline
+set cursorcolumn
+set wildignore+=*swp,*.class,*.pyc,*.png,*.jpg,*.gif,*.zip
+set wildignore+=*/tmp/*,*.o,*.obj,*.so     " Unix
+"set backup
+filetype plugin indent on
 syntax on
-"Vim_Colorscheme
+
+"Vim_Colorscheme (Use molokai)
 colorscheme molokai
 set t_Co=256
-hi Normal  ctermfg=252 ctermbg=None
-"Func_Python_Env
-function! s:python_custom()
-    let python_highlight_all = 1
-	function! s:man(keyword)
-       		execute '!pydoc ' . a:keyword
-     	endfunction
-        command! -nargs=1 Man call s:man()
-        cnoremap K :!pydoc 
-	setlocal omnifunc=jedi#completions
-   function! s:pypy_run()
-       execute 'w '
-       execute 'w' '!python3 % ' 'cw'
-       execute 'cw '
-   endfunction
-  command! C call s:pypy_run() 
-  map <F5> :C<CR>
+hi Normal  ctermfg=252 ctermbg=none
+let g:airline#extensions#tabline#enabled = 1
+let g:airline_powerline_fonts = 1
+let g:airline_theme = 'powerlineish'
+let g:airline#extensions#whitespace#enabled = 0
+let g:airline#extensions#syntastic#enabled = 1
+let g:airline_section_a = airline#section#create([''])
+let g:airline_section_b = airline#section#create(['Misaka'])
+let g:airline_section_c = airline#section#create(['%f','(','filetype',')'])
+let g:airline_section_x = airline#section#create(['ffenc'])
+let g:airline_section_y = airline#section#create([''])
+let g:airline_section_z = airline#section#create_right(['Line:%l','Row:%c'])
+set nofoldenable
 
-endfunction
-"jedi_setting
-set completeopt=longest,menuone
-let g:jedi#auto_vim_configuration = 0
-let g:jedi#popup_on_dot = 0 
-"Check_FileType
-if has("autocmd")
-	autocmd Filetype python call s:python_custom()
-endif
-"YoucompleteME
+"YCM
 let g:ycm_complete_in_comments=1
-let g:ycm_confirm_extra_conf=0
+let g:ycm_complete_in_strings =1
+let g:ycm_use_ultisnips_completer = 1
+let g:ycm_collect_identifiers_from_comments_and_strings = 1
 let g:ycm_collect_identifiers_from_tags_files=1
 inoremap <leader>; <C-x><C-o>
 set completeopt-=preview
 let g:ycm_min_num_of_chars_for_completion=1
 let g:ycm_cache_omnifunc=0
 let g:ycm_seed_identifiers_with_syntax=1
-"airline
-let g:airline#extensions#tabline#enabled = 1
-let g:airline_powerline_fonts = 1
-let g:airline_theme = 'powerlineish'
-let g:airline#extensions#whitespace#enabled = 0
-let g:airline#extensions#syntastic#enabled = 1
-let g:promptline_preset = {
-        \'a' : [ promptline#slices#user() ],
-        \'b' : [ promptline#slices#cwd() ],
-        \'c' : [ promptline#slices#vcs_branch()]}
-let g:airline_section_a = airline#section#create([''])
-let g:airline_section_b = airline#section#create(['MisakaVim'])
-let g:airline_section_c = airline#section#create(['%f','(','filetype',')'])
-let g:airline_section_x = airline#section#create(['ffenc'])
-let g:airline_section_y = airline#section#create([''])
-let g:airline_section_z = airline#section#create_right(['Line:%l','Row:%c'])
-set nofoldenable
-let g:syntastic_error_symbol = '✗'
-let g:syntastic_warning_symbol = '⚠'
-let g:syntastic_always_populate_loc_list = 1
-let g:syntastic_auto_loc_list = 1
-let g:syntastic_check_on_open = 1
-let g:syntastic_check_on_wq = 0
-let g:syntastic_python_checkers = ['pyflakes']
-set statusline+=%#warningmsg#
-set statusline+=%{SyntasticStatuslineFlag()}
-set statusline+=%*
-"IndentGuides
-let g:indent_guides_enable_on_vim_startup=1
-let g:indent_guides_start_level=2
-let g:indent_guides_guide_size=1
-nmap <F4> <Plug>IndentGuidesToggle
-nmap <F3> :NERDTreeToggle <CR>
-autocmd bufenter * if (winnr("$") == 1 && exists("b:NERDTreeType") &&b:NERDTreeType == "primary") | q | endif
+let g:ycm_global_ycm_extra_conf = "~/.vim/plugged/YouCompleteMe/third_party/ycmd/cpp/ycm/.ycm_extra_conf.py"
+
+"Snip
+let g:ycm_key_list_select_completion = ['<C-n>', '<Down>']
+let g:ycm_key_list_previous_completion = ['<C-p>', '<Up>']
+let g:SuperTabDefaultCompletionType = '<C-n>'
+let g:UltiSnipsExpandTrigger = "<tab>"
+let g:UltiSnipsJumpForwardTrigger = "<tab>"
+let g:UltiSnipsJumpBackwardTrigger = "<s-tab>"
+
+"ale
+let g:ale_linters = {
+			\   'sh' : ['shellcheck'],
+			\   'vim' : ['vint'],
+			\   'html' : ['tidy'],
+			\   'python' : ['flake8'],
+			\   'markdown' : ['mdl'],
+			\   'javascript' : ['eslint'],
+			\}
+
+let g:ale_sign_error = '>>'
+let g:ale_sign_warning = '>>'
+let g:ale_echo_msg_format = '[#%linter%#] %s [%severity%]'
+let g:ale_echo_msg_error_str = '✹ Error'
+let g:ale_echo_msg_warning_str = '⚠ Warning'
+let g:ale_statusline_format = ['Ⓔ •%d ', 'Ⓦ •%d ', ' ✔ •OK ']
+" delimitMate
+let delimitMate_expand_cr=1
+
+" javascript
+let g:javascript_plugin_jsdoc = 1
+let g:javascript_plugin_ngdoc = 1
+
+" NERDTreeToggle
+nnoremap <silent> <F3> :NERDTreeToggle<CR>
